@@ -1,0 +1,20 @@
+{
+
+    "manifest_version": 2,
+    "name": "CurrencyCon",
+    "version": "1.0",
+  
+    "description": "Automatically converts currencies to your preferred currency",
+  
+    "icons": {
+      "48": "icons/border-48.png"
+    },
+  
+    "content_scripts": [
+      {
+        "matches": ["*://*/*"],
+        "js": ["CurrencyCon.js"]
+      }
+    ]
+  
+  }
