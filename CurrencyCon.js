@@ -1,36 +1,64 @@
 var jsonObject; 
 window.onload = function(){
-    this.alert(this.document.body.innerText);
-    var splitted = this.document.body.innerText.replace(/\s+/g, '');
+    var wasSplit = this.document.body.innerText.replace(/\s+/g, '');
     jsonObject = JSON.stringify(jsonObject);
     var objectArray = JSON.parse(jsonObject);
-    var length = objectArray.length;
     var value;
+    var length = objectArray.length;
+    //loop all of the symbols
     for(var i = 0;i<length;i++){
-        var Occurence = splitted.indexOf(objectArray[i].symbol);
-        while(Occurence !== -1){
-            value = checkForNumbers(Occurence,splitted);
-            this.alert(value);
-            Occurence = splitted.indexOf(objectArray[i].symbol,Occurence+1);
+        var SymbolPosition = wasSplit.indexOf(objectArray[i].symbol);
+        //if the checked symbol exists(and therefore function doesn't return -1)
+        //check if there is a number around the symbol
+        while(SymbolPosition !== -1){
+            value = checkForNumbers(SymbolPosition,wasSplit);
+            if(value !== ""){
+                this.alert(value);
+            }
+            //there may be more symbols in the website, proceed with the start of the last one
+            SymbolPosition = wasSplit.indexOf(objectArray[i].symbol,SymbolPosition+objectArray[i].symbol.length);
         }
     }
 };
 
 
 function checkForNumbers(position, splitted){
-    var isANumber = true;
-    var StringPos = position;
-    var CurrencyValue;
+    //start with checking if there are numbers in front of the symbol
+    //if there are none, and the variable is still empty
+    //try backwards
+    var isANumber = true, StringPosForward = position,checkedBackwards = false;
+    var CurrencyValue = "";
     while(isANumber){
-        StringPos -= 1;
-        if(!isNaN(splitted[StringPos])){
-            CurrencyValue += splitted[StringPos].toString();
+        StringPosForward +=1;
+        if(!isNaN(splitted[StringPosForward]) || splitted[StringPosForward] == '.' || splitted[StringPosForward] == ','){
+            CurrencyValue += splitted[StringPosForward].toString();
         }
         else{
             isANumber = false;
         }
     }
-    return CurrencyValue;
+    //try checking backwards around the symbol
+    if(CurrencyValue == ""){
+        isANumber = true;
+        var StringPosBackward = position;
+        while(isANumber){
+            StringPosBackward -= 1;
+            if(!isNaN(splitted[StringPosBackward]) || splitted[StringPosBackward] == '.' || splitted[StringPosBackward] == ','){
+                CurrencyValue += splitted[StringPosBackward].toString();
+            }
+            else{
+                isANumber = false;
+            }
+        }
+        checkedBackwards == true;
+    }
+    if(checkedBackwards){
+        return CurrencyValue.split("").reverse().join("");
+    }
+    else{
+        return CurrencyValue;
+    }
+    
 }
 var jsonObject = [
     {
@@ -741,4 +769,4 @@ var jsonObject = [
         "symbol_native": "ZK",
         "code": "ZMK",
     }
-]
+];
