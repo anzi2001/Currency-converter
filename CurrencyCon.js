@@ -26,10 +26,26 @@ function checkForNumbers(position, splitted){
     //start with checking if there are numbers in front of the symbol
     //if there are none, and the variable is still empty
     //try backwards
-    var isANumber = true, StringPosForward = position,checkedBackwards = false;
-    var CurrencyValue = "";
+    var CurrencyVal = "", checkedBackwards = false;
+    CurrencyVal = checkAroundSymbols(1,splitted,position);
+    
+    //try checking backwards around the symbol
+    if(CurrencyVal == ""){
+        CurrencyVal = checkAroundSymbols(-1,splitted,position);
+        checkedBackwards = true;
+    }
+    if(checkedBackwards){
+        return CurrencyVal.split("").reverse().join("");
+    }
+    else{
+        return CurrencyVal;
+    }
+    
+}
+function checkAroundSymbols(toMoveKoeficient,splitted,position){
+    var isANumber = true, StringPosForward = position, CurrencyValue = "";
     while(isANumber){
-        StringPosForward +=1;
+        StringPosForward += toMoveKoeficient;
         if(!isNaN(splitted[StringPosForward]) || splitted[StringPosForward] == '.' || splitted[StringPosForward] == ','){
             CurrencyValue += splitted[StringPosForward].toString();
         }
@@ -37,28 +53,18 @@ function checkForNumbers(position, splitted){
             isANumber = false;
         }
     }
-    //try checking backwards around the symbol
-    if(CurrencyValue == ""){
-        isANumber = true;
-        var StringPosBackward = position;
-        while(isANumber){
-            StringPosBackward -= 1;
-            if(!isNaN(splitted[StringPosBackward]) || splitted[StringPosBackward] == '.' || splitted[StringPosBackward] == ','){
-                CurrencyValue += splitted[StringPosBackward].toString();
-            }
-            else{
-                isANumber = false;
-            }
+    return CurrencyValue;
+}
+function checkCurrencyValue(url){
+    var httpReq = new XMLHttpRequest();
+    httpReq.onreadystatechange = function(){
+        if(httpReq.readyState == 4 && httpReq.status == 200){
+
+            return httpReq.responseText;
         }
-        checkedBackwards == true;
-    }
-    if(checkedBackwards){
-        return CurrencyValue.split("").reverse().join("");
-    }
-    else{
-        return CurrencyValue;
-    }
-    
+    };
+    httpReq.open("GET",url,true);
+    httpReq.send();
 }
 var jsonObject = [
     {
