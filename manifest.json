@@ -16,6 +16,9 @@
         "js": ["CurrencyCon.js"]
       }
     ],
+    "background":{
+      "scripts":"data-script.js"
+    },
     "permissions":[
       "<all_urls>"
     ]
