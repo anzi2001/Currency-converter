@@ -17,9 +17,10 @@
       }
     ],
     "background":{
-      "scripts":"data-script.js"
+      "scripts":["data-script.js"]
     },
     "permissions":[
+      "tabs",
       "<all_urls>"
     ]
 }
