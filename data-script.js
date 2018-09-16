@@ -333,7 +333,7 @@ CurrencyObject = [
     },
     {
 		"isBeingChecked":false,
-        "symbol": "Rs",
+        "symbol": "₹",
 		"value" : 0,
         "symbol_native": "টকা",
         "code": "INR",

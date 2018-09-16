@@ -7,7 +7,7 @@ window.onload = function(){
     var subscribable = {
         subscribedObjects: [],
         subscribe: function(convertableObject){
-            this.subscribedObjects[this.subscribedObjects.length] = convertableObject; 
+            this.subscribedObjects.push(convertableObject); 
         },
         notifyAllSubscribed: function(currencyCode){
             for(var i = 0, length = this.subscribedObjects.length;i<length;i++){
@@ -15,11 +15,7 @@ window.onload = function(){
                     embedInWebsite(this.subscribedObjects[i]);
                 }
             }
-            this.insertIntoWebpage();
         },
-        insertIntoWebpage: function(){
-            window.document.body.innerHTML = alteredHTML;
-        }
     };
     browser.runtime.sendMessage({init:true}).then(function(jsonObject){
         if(jsonObject !== undefined){
@@ -35,7 +31,7 @@ window.onload = function(){
             while(SymbolPosition !== -1){
                 value = checkForNumbers(SymbolPosition);
                 //check input for dots or spaces only
-                if(value !== "" && !/^\s+/.test(value) && !/^\.+/.test(value)){
+                if(value !== "" && !/^\s+/.test(value) && !/^\.+/.test(value) && !/^\,+/.test(value)){
                     //save the state of variables so i can use them later in the callback
                     var convertableObject = {
                         iAtTheTime: i,
@@ -55,9 +51,9 @@ window.onload = function(){
                     }
                     else{
                         CurrencyObject[i].isBeingChecked = true;
-                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q=".concat(CurrencyObject[convertableObject.iAtTheTime].code,"_EUR&compact=y"),JSON.stringify(convertableObject),function(response,object){
+                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_EUR&compact=y",JSON.stringify(convertableObject),function(response,object){
                             object = JSON.parse(object);
-                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code.concat("_EUR")].val;
+                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_EUR"].val;
                             var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
                             CurrencyObject[iOfMatchingObject].value = CurrencyValue;
                             browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
@@ -74,13 +70,13 @@ window.onload = function(){
                 SymbolPosition = alteredHTML.indexOf(CurrencyObject[i].symbol,SymbolPosition+CurrencyObject[i].symbol.length);            
             } 
         }
-        subscribable.insertIntoWebpage();
+        window.document.body.innerHTML = alteredHTML;
     }
 };
 
 function embedInWebsite(convertableObject){
-    var convertedCurrencyValue ='('+Number(convertableObject.CurrencyString) * CurrencyObject[convertableObject.iAtTheTime].value+" EUR)";
-    alteredHTML = alteredHTML.substr(0,convertableObject.indexofSymbol) + convertedCurrencyValue + alteredHTML.substr(convertableObject.indexofSymbol+convertedCurrencyValue.length);
+    var convertedCurrencyValue ='('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+" EUR)";
+    alteredHTML = alteredHTML.substr(0,convertableObject.indexofSymbol+convertableObject.CurrencyString.length+1) + convertedCurrencyValue + alteredHTML.substr(convertableObject.indexofSymbol+convertableObject.CurrencyString .length+1);
 }
 
 function checkVariablesForMatchingObjects(code){
@@ -95,7 +91,7 @@ function checkVariablesForMatchingObjects(code){
 function checkForNumbers(position){
     //start with checking if there are numbers in front of the symbol
     //if there are none, and the variable is still empty
-    //try backwards
+    //try backward
     var CurrencyVal = "", checkedBackwards = false;
     CurrencyVal = checkAroundSymbol(1,position);
     //try checking backwards around the symbol
@@ -110,11 +106,12 @@ function checkForNumbers(position){
         return CurrencyVal;
     }
 }
+
 function checkAroundSymbol(toMoveKoeficient,position){
     var isANumber = true, StringPosForward = position, CurrencyValue = "";
     while(isANumber){
         StringPosForward += toMoveKoeficient;
-        if(!isNaN(alteredHTML[StringPosForward]) || alteredHTML[StringPosForward] == '.'){
+        if(!isNaN(alteredHTML[StringPosForward]) || alteredHTML[StringPosForward] == '.'|| alteredHTML[StringPosForward] == ","){
             CurrencyValue += alteredHTML[StringPosForward];
             
         }
