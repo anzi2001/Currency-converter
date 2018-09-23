@@ -23,6 +23,11 @@ browser.runtime.onMessage.addListener(function(message){
             resolve({response: alteredHTML});
         });
     }
+    else if(message.hasOwnProperty("getCurrencies")){
+        return new Promise(resolve=>{
+            resolve({response:CurrencyObject});
+        });
+    }
 });
 
 
