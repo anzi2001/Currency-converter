@@ -17,6 +17,11 @@ browser.runtime.onMessage.addListener(function(message){
         CurrencyObject[message.iOfObject].value = message.valueOfCurrency;
         console.log(CurrencyObject[message.iOfObject].value);   
     }
+    else if(message.hasOwnProperty("resetValues")){
+        for(var i = 0;i<CurrencyObject.length;i++){
+            CurrencyObject[i].value = 0;
+        }
+    }
 });
 
 
