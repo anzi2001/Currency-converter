@@ -1,6 +1,7 @@
 var CurrencyObject;
 var alteredHTML;
 var value;
+var preferredCurrency;
 var subscribable = {
     subscribedObjects: [],
     subscribe: function(convertableObject){
@@ -60,18 +61,22 @@ function start(){
                 }
                 else{
                     CurrencyObject[i].isBeingChecked = true;
-                    checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_EUR&compact=y",JSON.stringify(convertableObject),function(response,object){
-                        object = JSON.parse(object);
-                        var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_EUR"].val;
-                        var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
-                        CurrencyObject[iOfMatchingObject].value = CurrencyValue;
-                        browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
-                        //this doesn't need to be sent to background since it's going to be on only for a short period of time
-                        CurrencyObject[object.iAtTheTime].isBeingChecked = false;
-
-                        embedInWebsite(object);
-                        subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
+                    browser.storage.local.get("preferredCurrency").then((response) =>{
+                        preferredCurrency = response.preferredCurrency;
+                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+response.preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
+                            object = JSON.parse(object);
+                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_EUR"].val;
+                            var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
+                            CurrencyObject[iOfMatchingObject].value = CurrencyValue;
+                            browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
+                            //this doesn't need to be sent to background since it's going to be on only for a short period of time
+                            CurrencyObject[object.iAtTheTime].isBeingChecked = false;
+    
+                            embedInWebsite(object);
+                            subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
+                        });
                     });
+                    
                 }
             }
             //there may be more symbols in the website, proceed with the start of the last one
@@ -82,7 +87,7 @@ function start(){
 }
 
 function embedInWebsite(convertableObject){
-    var convertedCurrencyValue ='('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+" EUR)";
+    var convertedCurrencyValue ='('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
     var fullElementText = checkForWholeText(convertableObject.indexofSymbol);
     var foundElement = findElement(fullElementText);
     if(foundElement != undefined){
