@@ -18,6 +18,7 @@ var subscribable = {
 
 
 window.onload = function(){
+    elements = document.body.getElementsByTagName("*");
     alteredHTML = document.body.innerHTML;
     alteredHTML.replace(/^\s*\n/gm, "");
     browser.runtime.sendMessage({
@@ -169,7 +170,7 @@ function checkForWholeText(symbolPosition){
     return fullText;
 }
 function findElement(fullText){
-    var elements = document.body.getElementsByTagName("*");
+    
     for(var i =0,length = elements.length;i<length;i++){
         if(elements[i].textContent === fullText){
             return elements[i];

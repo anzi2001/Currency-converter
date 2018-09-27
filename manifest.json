@@ -7,7 +7,12 @@
     "description": "Automatically converts currencies to your preferred currency",
   
     "icons": {
-      "48": "icons/border-48.png"
+      "48": "icons/dollar-48.png"
+    },
+    "applications":{
+      "gecko":{
+        "id":"automatic-currency@anzi2001"
+      }
     },
   
     "content_scripts": [
