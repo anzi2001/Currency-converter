@@ -1,4 +1,7 @@
-
+browser.storage.local.set({
+    "preferredCurrency":"USD",
+    "preferredIndex":0
+});
 browser.runtime.onMessage.addListener(function(message){
     if(message.hasOwnProperty("DOM")){
         alteredHTML = message.DOM;
