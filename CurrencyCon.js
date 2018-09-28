@@ -26,10 +26,10 @@ window.onload = function(){
         getCurrencies:true
     }).then(function(alteredHTML){
         CurrencyObject = alteredHTML.response;
-        setTimeout(function(){
+        browser.storage.local.get("preferredCurrency").then(function(res){
+            preferredCurrency = res.preferredCurrency;
             start();
-        },500);
-        
+        });
     },
     function(){
         console.log("error occured");
@@ -63,20 +63,17 @@ function start(){
                 }
                 else{
                     CurrencyObject[i].isBeingChecked = true;
-                    browser.storage.local.get("preferredCurrency").then((response) =>{
-                        preferredCurrency = response.preferredCurrency;
-                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+response.preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
-                            object = JSON.parse(object);
-                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
-                            var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
-                            CurrencyObject[iOfMatchingObject].value = CurrencyValue;
-                            browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
-                            //this doesn't need to be sent to background since it's going to be on only for a short period of time
-                            CurrencyObject[object.iAtTheTime].isBeingChecked = false;
-    
-                            embedInWebsite(object);
-                            subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
-                        });
+                    checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
+                        object = JSON.parse(object);
+                        var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
+                        var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
+                        CurrencyObject[iOfMatchingObject].value = CurrencyValue;
+                        browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
+                        //this doesn't need to be sent to background since it's going to be on only for a short period of time
+                        CurrencyObject[object.iAtTheTime].isBeingChecked = false;
+
+                        embedInWebsite(object);
+                        subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
                     });
                     
                 }
