@@ -5,12 +5,13 @@ var preferredCurrency;
 var subscribable = {
     subscribedObjects: [],
     subscribe: function(convertableObject){
-        this.subscribedObjects.push(convertableObject); 
+        this.subscribedObjects.push(JSON.stringify(convertableObject)); 
     },
     notifyAllSubscribed: function(currencyCode){
         for(var i = 0, length = this.subscribedObjects.length;i<length;i++){
-            if(CurrencyObject[this.subscribedObjects[i].iAtTheTime].code == currencyCode){
-                embedInWebsite(this.subscribedObjects[i]);
+            var object = JSON.parse(this.subscribedObjects[i]);
+            if(CurrencyObject[object.iAtTheTime].code == currencyCode){
+                embedInWebsite(object);
             }
         }
     },
@@ -20,7 +21,7 @@ var subscribable = {
 window.onload = function(){
     elements = document.body.getElementsByTagName("*");
     alteredHTML = document.body.innerHTML;
-    alteredHTML.replace(/^\s*\n/gm, "");
+    //alteredHTML.replace(/^\s*\n/gm, "");
     browser.runtime.sendMessage({
         getCurrencies:true
     }).then(function(alteredHTML){
@@ -66,7 +67,7 @@ function start(){
                         preferredCurrency = response.preferredCurrency;
                         checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+response.preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
                             object = JSON.parse(object);
-                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_EUR"].val;
+                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
                             var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
                             CurrencyObject[iOfMatchingObject].value = CurrencyValue;
                             browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});

@@ -600,13 +600,6 @@ CurrencyObject = [
     },
     {
 		"isBeingChecked":false,
-        "symbol": "RWF",
-		"value" : 0,
-        "symbol_native": "FR",
-        "code": "RWF",
-    },
-    {
-		"isBeingChecked":false,
         "symbol": "SDG",
 		"value" : 0,
         "symbol_native": "SDG",
