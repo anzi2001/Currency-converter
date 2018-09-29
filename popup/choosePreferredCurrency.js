@@ -34,4 +34,4 @@ document.addEventListener("change",function(e){
     if(e.target.selectedIndex != selectIndex){
         changed = true;
     }
-})
+});

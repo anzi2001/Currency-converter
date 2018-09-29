@@ -1,15 +1,14 @@
 var CurrencyObject;
 var alteredHTML;
-var value;
 var preferredCurrency;
 var subscribable = {
     subscribedObjects: [],
     subscribe: function(convertableObject){
-        this.subscribedObjects.push(JSON.stringify(convertableObject)); 
+        this.subscribedObjects.push(convertableObject); 
     },
     notifyAllSubscribed: function(currencyCode){
         for(var i = 0, length = this.subscribedObjects.length;i<length;i++){
-            var object = JSON.parse(this.subscribedObjects[i]);
+            var object = this.subscribedObjects[i];
             if(CurrencyObject[object.iAtTheTime].code == currencyCode){
                 embedInWebsite(object);
             }
@@ -36,6 +35,8 @@ window.onload = function(){
     });
 };
 function start(){
+    var value;
+    var precompiledRegex = /[A-Za-z0-9]/;
     for(var i = 0,length = CurrencyObject.length-2;i<length;i++){
         var SymbolPosition = alteredHTML.indexOf(CurrencyObject[i].symbol);
         //if the checked symbol exists(and therefore function doesn't return -1),
@@ -43,7 +44,7 @@ function start(){
         while(SymbolPosition !== -1){
             value = checkForNumbers(SymbolPosition);
             //check input for dots or spaces only
-            if(value !== "" && !/^\s+/.test(value) && !/^\.+/.test(value) && !/^\,+/.test(value)){
+            if(value !== "" && precompiledRegex.test(value)){
                 //save the state of variables so i can use them later in the callback
                 var convertableObject = {
                     iAtTheTime: i,
