@@ -1,6 +1,11 @@
-browser.storage.local.set({
-    "preferredCurrency":"USD",
-    "preferredIndex":0
+browser.storage.local.get("preferredCurrency").then(function(res){
+    if(res.preferredCurrency == undefined){
+        browser.storage.local.set({
+            "preferredCurrency":"USD",
+            "preferredIndex":0
+        });
+    }
+    
 });
 browser.runtime.onMessage.addListener(function(message){
     if(message.hasOwnProperty("DOM")){
