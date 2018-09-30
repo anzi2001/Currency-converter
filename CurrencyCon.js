@@ -38,6 +38,9 @@ function start(){
     var value;
     var precompiledRegex = /[A-Za-z0-9]/;
     for(var i = 0,length = CurrencyObject.length-2;i<length;i++){
+        if(CurrencyObject[i].code == preferredCurrency){
+            continue;
+        }
         var SymbolPosition = alteredHTML.indexOf(CurrencyObject[i].symbol);
         //if the checked symbol exists(and therefore function doesn't return -1),
         //check if there is a number around the symbol
