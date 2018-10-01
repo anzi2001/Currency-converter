@@ -1,6 +1,7 @@
 var CurrencyObject;
 var alteredHTML;
 var preferredCurrency;
+var children=[];
 var subscribable = {
     subscribedObjects: [],
     subscribe: function(convertableObject){
@@ -10,7 +11,7 @@ var subscribable = {
         for(var i = 0, length = this.subscribedObjects.length;i<length;i++){
             var object = this.subscribedObjects[i];
             if(CurrencyObject[object.iAtTheTime].code == currencyCode){
-                embedInWebsite(object);
+                embedInWebsite(object,object.element);
             }
         }
     },
@@ -19,7 +20,11 @@ var subscribable = {
 
 window.onload = function(){
     elements = document.body.getElementsByTagName("*");
-    alteredHTML = document.body.innerHTML;
+    for(var i = 0,length = elements.length;i<length;i++){
+        if(elements[i].children.length==0){
+            children.push(elements[i]);
+        }
+    }
     //alteredHTML.replace(/^\s*\n/gm, "");
     browser.runtime.sendMessage({
         getCurrencies:true
@@ -28,6 +33,9 @@ window.onload = function(){
         browser.storage.local.get("preferredCurrency").then(function(res){
             preferredCurrency = res.preferredCurrency;
             start();
+        },
+        function(res){
+            console.log("error occured");
         });
     },
     function(){
@@ -41,61 +49,63 @@ function start(){
         if(CurrencyObject[i].code == preferredCurrency){
             continue;
         }
-        var SymbolPosition = alteredHTML.indexOf(CurrencyObject[i].symbol);
-        //if the checked symbol exists(and therefore function doesn't return -1),
-        //check if there is a number around the symbol
-        while(SymbolPosition !== -1){
-            value = checkForNumbers(SymbolPosition);
-            //check input for dots or spaces only
-            if(value !== "" && precompiledRegex.test(value)){
-                //save the state of variables so i can use them later in the callback
-                var convertableObject = {
-                    iAtTheTime: i,
-                    indexofSymbol: SymbolPosition,
-                    CurrencyString : value,
-                };
-                /*convertableObject.iAtTheTime = i;
-                convertableObject.indexofSymbol = SymbolPosition;
-                convertableObject.CurrencyString = value;*/
+        for(var j = 0,childLength = children.length;j<childLength;j++){
+            var SymbolPosition = children[j].textContent.indexOf(CurrencyObject[i].symbol);
+            //if the checked symbol exists(and therefore function doesn't return -1),
+            //check if there is a number around the symbol
+            while(SymbolPosition !== -1){
+                value = checkForNumbers(SymbolPosition,children[j]);
+                //check input for dots or spaces only
+                if(value !== "" && precompiledRegex.test(value)){
+                    //save the state of variables so i can use them later in the callback
+                    var convertableObject = {
+                        iAtTheTime: i,
+                        indexofSymbol: SymbolPosition,
+                        CurrencyString : value,
+                        element:children[j]
+                    };
+                    /*convertableObject.iAtTheTime = i;
+                    convertableObject.indexofSymbol = SymbolPosition;
+                    convertableObject.CurrencyString = value;*/
 
-                if(CurrencyObject[convertableObject.iAtTheTime].value === 0 && CurrencyObject[i].isBeingChecked){
-                    subscribable.subscribe(convertableObject);
-                }
-                else if(CurrencyObject[convertableObject.iAtTheTime].value !== 0){
-                    embedInWebsite(convertableObject);
-                    
-                }
-                else{
-                    CurrencyObject[i].isBeingChecked = true;
-                    checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
-                        object = JSON.parse(object);
-                        var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
-                        var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
-                        CurrencyObject[iOfMatchingObject].value = CurrencyValue;
-                        browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
-                        //this doesn't need to be sent to background since it's going to be on only for a short period of time
-                        CurrencyObject[object.iAtTheTime].isBeingChecked = false;
+                    if(CurrencyObject[convertableObject.iAtTheTime].value === 0 && CurrencyObject[i].isBeingChecked){
+                        subscribable.subscribe(convertableObject);
+                    }
+                    else if(CurrencyObject[convertableObject.iAtTheTime].value !== 0){
+                        embedInWebsite(convertableObject,children[j]);
 
-                        embedInWebsite(object);
-                        subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
-                    });
-                    
+                    }
+                    else{
+                        CurrencyObject[i].isBeingChecked = true;
+                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
+                            object = JSON.parse(object);
+                            var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
+                            var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
+                            CurrencyObject[iOfMatchingObject].value = CurrencyValue;
+                            browser.runtime.sendMessage({"iOfObject":iOfMatchingObject,"valueOfCurrency": CurrencyValue});
+                            //this doesn't need to be sent to background since it's going to be on only for a short period of time
+                            CurrencyObject[object.iAtTheTime].isBeingChecked = false;
+
+                            embedInWebsite(object,children[j]);
+                            subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
+                        });
+
+                    }
                 }
-            }
-            //there may be more symbols in the website, proceed with the start of the last one
-            SymbolPosition = alteredHTML.indexOf(CurrencyObject[i].symbol,SymbolPosition+CurrencyObject[i].symbol.length);            
-        } 
+                //there may be more symbols in the website, proceed with the start of the last one
+                SymbolPosition = children[j].textContent.indexOf(CurrencyObject[i].symbol,SymbolPosition+CurrencyObject[i].symbol.length);            
+            } 
+        }
+        
     }
     return alteredHTML;
 }
 
-function embedInWebsite(convertableObject){
+function embedInWebsite(convertableObject,element){
     var convertedCurrencyValue ='('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
-    var fullElementText = checkForWholeText(convertableObject.indexofSymbol);
-    var foundElement = findElement(fullElementText);
-    if(foundElement != undefined){
-        foundElement.textContent += convertedCurrencyValue;
-    }
+    //var fullElementText = checkForWholeText(convertableObject.indexofSymbol);
+    //var foundElement = findElement(fullElementText);
+    element.textContent += convertedCurrencyValue;
     
 }
 
@@ -108,15 +118,15 @@ function checkVariablesForMatchingObjects(code){
     }
 
 }
-function checkForNumbers(position){
+function checkForNumbers(position,element){
     //start with checking if there are numbers in front of the symbol
     //if there are none, and the variable is still empty
     //try backward
     var CurrencyVal = "", checkedBackwards = false;
-    CurrencyVal = checkAroundSymbol(1,position);
+    CurrencyVal = checkAroundSymbol(1,position,element);
     //try checking backwards around the symbol
     if(CurrencyVal == ""){
-        CurrencyVal = checkAroundSymbol(-1,position);
+        CurrencyVal = checkAroundSymbol(-1,position,element);
         checkedBackwards = true;
     }
     if(checkedBackwards){
@@ -127,12 +137,12 @@ function checkForNumbers(position){
     }
 }
 
-function checkAroundSymbol(toMoveKoeficient,position){
+function checkAroundSymbol(toMoveKoeficient,position,element){
     var isANumber = true, StringPosForward = position, CurrencyValue = "";
     while(isANumber){
         StringPosForward += toMoveKoeficient;
-        if(!isNaN(alteredHTML[StringPosForward]) || alteredHTML[StringPosForward] == '.'|| alteredHTML[StringPosForward] == ","){
-            CurrencyValue += alteredHTML[StringPosForward];
+        if(!isNaN(element.textContent[StringPosForward]) || element.textContent[StringPosForward] == '.'||element.textContent[StringPosForward] == ","){
+            CurrencyValue += element.textContent[StringPosForward];
             
         }
         else{
