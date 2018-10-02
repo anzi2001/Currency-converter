@@ -163,10 +163,38 @@ function findElement(fullText){
     }
 }
 
-
-window.onload = function(){
-    
-    //alteredHTML.replace(/^\s*\n/gm, "");
+if(document.readyState !== "complete"){
+    window.addEventListener("load",function load(event){
+        window.removeEventListener("load",load,false);
+        //alteredHTML.replace(/^\s*\n/gm, "");
+        browser.runtime.sendMessage({
+            getCurrencies:true
+        }).then(function(alteredHTML){
+            CurrencyObject = alteredHTML.response;
+            browser.storage.local.get("preferredCurrency").then(function(res){
+                setTimeout(() => {
+                    elements = document.body.getElementsByTagName("*");
+                    preferredCurrency = res.preferredCurrency;
+                    for(var i = 0,length = elements.length;i<length;i++){
+                        if(elements[i].children.length==0){
+                            children.push(elements[i]);
+                        }
+                    }
+                    start();
+                }, 500);
+                
+            
+            },
+            function(res){
+                console.log("error occured");
+            });
+        },
+        function(){
+            console.log("error occured");
+        });
+    },false);
+}
+else{
     browser.runtime.sendMessage({
         getCurrencies:true
     }).then(function(alteredHTML){
@@ -181,6 +209,7 @@ window.onload = function(){
             }
             start();
         
+        
         },
         function(res){
             console.log("error occured");
@@ -189,4 +218,4 @@ window.onload = function(){
     function(){
         console.log("error occured");
     });
-};
+}
