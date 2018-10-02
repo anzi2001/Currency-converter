@@ -16,34 +16,6 @@ var subscribable = {
         }
     },
 };
-
-
-window.onload = function(){
-    
-    //alteredHTML.replace(/^\s*\n/gm, "");
-    browser.runtime.sendMessage({
-        getCurrencies:true
-    }).then(function(alteredHTML){
-        CurrencyObject = alteredHTML.response;
-        browser.storage.local.get("preferredCurrency").then(function(res){
-            elements = document.body.getElementsByTagName("*");
-            preferredCurrency = res.preferredCurrency;
-            for(var i = 0,length = elements.length;i<length;i++){
-                if(elements[i].children.length==0){
-                    children.push(elements[i]);
-                }
-            }
-            start();
-        
-        },
-        function(res){
-            console.log("error occured");
-        });
-    },
-    function(){
-        console.log("error occured");
-    });
-};
 function start(){
     var value;
     var precompiledRegex = /[A-Za-z0-9]/;
@@ -100,7 +72,6 @@ function start(){
         }
         
     }
-    return alteredHTML;
 }
 
 function embedInWebsite(convertableObject,element){
@@ -191,3 +162,31 @@ function findElement(fullText){
         }
     }
 }
+
+
+window.onload = function(){
+    
+    //alteredHTML.replace(/^\s*\n/gm, "");
+    browser.runtime.sendMessage({
+        getCurrencies:true
+    }).then(function(alteredHTML){
+        CurrencyObject = alteredHTML.response;
+        browser.storage.local.get("preferredCurrency").then(function(res){
+            elements = document.body.getElementsByTagName("*");
+            preferredCurrency = res.preferredCurrency;
+            for(var i = 0,length = elements.length;i<length;i++){
+                if(elements[i].children.length==0){
+                    children.push(elements[i]);
+                }
+            }
+            start();
+        
+        },
+        function(res){
+            console.log("error occured");
+        });
+    },
+    function(){
+        console.log("error occured");
+    });
+};
