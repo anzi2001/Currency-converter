@@ -1,5 +1,4 @@
 var CurrencyObject;
-var alteredHTML;
 var preferredCurrency;
 var children=[];
 var subscribable = {
@@ -16,6 +15,42 @@ var subscribable = {
         }
     },
 };
+function init(){
+    browser.runtime.sendMessage({
+        getCurrencies:true
+    }).then(function(currencies){
+        CurrencyObject = currencies.response;
+        browser.storage.local.get("preferredCurrency").then(function(res){
+            elements = document.body.getElementsByTagName("*");
+            preferredCurrency = res.preferredCurrency;
+            for(var i = 0,length = elements.length;i<length;i++){
+                if(elements[i].children.length==0){
+                    children.push(elements[i]);
+                }
+            }
+            start();
+        
+        
+        },
+        function(res){
+            console.log("error occured");
+        });
+    },
+    function(){
+        console.log("error occured");
+    });
+}
+
+if(document.readyState !== "complete"){
+    window.addEventListener("load",function load(event){
+        window.removeEventListener("load",load,false);
+        init();
+    },false);
+}
+else{
+    init();
+    
+}
 function start(){
     var value;
     var precompiledRegex = /[A-Za-z0-9]/;
@@ -38,9 +73,6 @@ function start(){
                         CurrencyString : value,
                         element:children[j]
                     };
-                    /*convertableObject.iAtTheTime = i;
-                    convertableObject.indexofSymbol = SymbolPosition;
-                    convertableObject.CurrencyString = value;*/
 
                     if(CurrencyObject[convertableObject.iAtTheTime].value === 0 && CurrencyObject[i].isBeingChecked){
                         subscribable.subscribe(convertableObject);
@@ -75,10 +107,7 @@ function start(){
 }
 
 function embedInWebsite(convertableObject,element){
-    var convertedCurrencyValue ='('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
-    //var fullElementText = checkForWholeText(convertableObject.indexofSymbol);
-    //var foundElement = findElement(fullElementText);
-    element.textContent += convertedCurrencyValue;
+    element.textContent += '('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
     
 }
 
@@ -136,86 +165,4 @@ function checkCurrencyValue(url,object,callback){
     xhttpReq.send();
 }
 
-function checkForWholeText(symbolPosition){
-    //go to the start of the element
-    var fullText = "",currentChar ='',pos;
-    pos = symbolPosition;
-    while(currentChar !== '>'){
-        pos -= 1;
-        currentChar = alteredHTML[pos];
-        
-    }
-    pos++;
-    //start moving thought the element and collecting chars
-    while(currentChar !== '<'){
-        fullText += alteredHTML[pos];
-        pos += 1;
-        currentChar = alteredHTML[pos];
-    }
-    return fullText;
-}
-function findElement(fullText){
-    
-    for(var i =0,length = elements.length;i<length;i++){
-        if(elements[i].textContent === fullText){
-            return elements[i];
-        }
-    }
-}
 
-if(document.readyState !== "complete"){
-    window.addEventListener("load",function load(event){
-        window.removeEventListener("load",load,false);
-        //alteredHTML.replace(/^\s*\n/gm, "");
-        browser.runtime.sendMessage({
-            getCurrencies:true
-        }).then(function(alteredHTML){
-            CurrencyObject = alteredHTML.response;
-            browser.storage.local.get("preferredCurrency").then(function(res){
-                setTimeout(() => {
-                    elements = document.body.getElementsByTagName("*");
-                    preferredCurrency = res.preferredCurrency;
-                    for(var i = 0,length = elements.length;i<length;i++){
-                        if(elements[i].children.length==0){
-                            children.push(elements[i]);
-                        }
-                    }
-                    start();
-                }, 500);
-                
-            
-            },
-            function(res){
-                console.log("error occured");
-            });
-        },
-        function(){
-            console.log("error occured");
-        });
-    },false);
-}
-else{
-    browser.runtime.sendMessage({
-        getCurrencies:true
-    }).then(function(alteredHTML){
-        CurrencyObject = alteredHTML.response;
-        browser.storage.local.get("preferredCurrency").then(function(res){
-            elements = document.body.getElementsByTagName("*");
-            preferredCurrency = res.preferredCurrency;
-            for(var i = 0,length = elements.length;i<length;i++){
-                if(elements[i].children.length==0){
-                    children.push(elements[i]);
-                }
-            }
-            start();
-        
-        
-        },
-        function(res){
-            console.log("error occured");
-        });
-    },
-    function(){
-        console.log("error occured");
-    });
-}
