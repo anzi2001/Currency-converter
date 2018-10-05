@@ -1,6 +1,7 @@
 var CurrencyObject;
 var preferredCurrency;
 var children=[];
+var observer;
 var subscribable = {
     subscribedObjects: [],
     subscribe: function(convertableObject){
@@ -28,7 +29,7 @@ function init(){
                     children.push(elements[i]);
                 }
             }
-            start();
+            start(children);
         
         
         },
@@ -40,30 +41,70 @@ function init(){
         console.log("error occured");
     });
 }
+function initObserver(){
+    if(CurrencyObject == undefined){
+        browser.runtime.sendMessage({
+            getCurrencies:true,
+        }).then((currencies)=>{
+            CurrencyObject = currencies.response;
+            if(preferredCurrency == undefined){
+                browser.storage.local.get("preferredCurrency").then((res)=>{
+                    preferredCurrency = res.preferredCurrency;
+
+                    var body = document.getElementsByTagName("body");
+                    var config = {attributes:true,childList:true,subtree:true};
+                    observer = new MutationObserver((mutationsList,observable)=>{
+                        for(var mutation of mutationsList) {
+                            if(mutation.addedNodes.length != 0){
+                                for(var addedNode of mutation.addedNodes){
+                                    if(addedNode.children !== undefined){
+                                        var node = addedNode.getElementsByTagName("*");
+                                        var nodeChildren = [];
+                                        for(var j = 0,addedLength = node.length;j<addedLength;j++){
+                                            if(node[j].children.length == 0){
+                                                nodeChildren.push(node[j]);
+    
+                                            }
+                                        }
+                                        start(nodeChildren);
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    });
+                    observer.observe(body[0],config);
+                });
+            }
+        });
+    }
+}
 
 if(document.readyState !== "complete"){
     window.addEventListener("load",function load(event){
         window.removeEventListener("load",load,false);
         init();
+        initObserver();
     },false);
 }
 else{
     init();
+    initObserver();
     
 }
-function start(){
+function start(nodeToCheck){
     var value;
     var precompiledRegex = /[A-Za-z0-9]/;
     for(var i = 0,length = CurrencyObject.length-2;i<length;i++){
         if(CurrencyObject[i].code == preferredCurrency){
             continue;
         }
-        for(var j = 0,childLength = children.length;j<childLength;j++){
-            var SymbolPosition = children[j].textContent.indexOf(CurrencyObject[i].symbol);
+        for(var j = 0,childLength = nodeToCheck.length;j<childLength;j++){
+            var SymbolPosition = nodeToCheck[j].textContent.indexOf(CurrencyObject[i].symbol);
             //if the checked symbol exists(and therefore function doesn't return -1),
             //check if there is a number around the symbol
             while(SymbolPosition !== -1){
-                value = checkForNumbers(SymbolPosition,children[j]);
+                value = checkForNumbers(SymbolPosition,nodeToCheck[j]);
                 //check input for dots or spaces only
                 if(value !== "" && precompiledRegex.test(value)){
                     //save the state of variables so i can use them later in the callback
@@ -71,14 +112,14 @@ function start(){
                         iAtTheTime: i,
                         indexofSymbol: SymbolPosition,
                         CurrencyString : value,
-                        element:children[j]
+                        element:nodeToCheck[j]
                     };
 
                     if(CurrencyObject[convertableObject.iAtTheTime].value === 0 && CurrencyObject[i].isBeingChecked){
                         subscribable.subscribe(convertableObject);
                     }
                     else if(CurrencyObject[convertableObject.iAtTheTime].value !== 0){
-                        embedInWebsite(convertableObject,children[j]);
+                        embedInWebsite(convertableObject,nodeToCheck[j]);
 
                     }
                     else{
@@ -92,14 +133,14 @@ function start(){
                             //this doesn't need to be sent to background since it's going to be on only for a short period of time
                             CurrencyObject[object.iAtTheTime].isBeingChecked = false;
 
-                            embedInWebsite(object,children[j]);
+                            embedInWebsite(object,nodeToCheck[j]);
                             subscribable.notifyAllSubscribed(CurrencyObject[object.iAtTheTime].code);
                         });
 
                     }
                 }
                 //there may be more symbols in the website, proceed with the start of the last one
-                SymbolPosition = children[j].textContent.indexOf(CurrencyObject[i].symbol,SymbolPosition+CurrencyObject[i].symbol.length);            
+                SymbolPosition = nodeToCheck[j].textContent.indexOf(CurrencyObject[i].symbol,SymbolPosition+CurrencyObject[i].symbol.length);            
             } 
         }
         
