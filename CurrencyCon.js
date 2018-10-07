@@ -4,10 +4,10 @@ var children=[];
 var observer;
 var subscribable = {
     subscribedObjects: [],
-    subscribe: function(convertableObject){
+    subscribe: (convertableObject)=>{
         this.subscribedObjects.push(convertableObject); 
     },
-    notifyAllSubscribed: function(currencyCode){
+    notifyAllSubscribed: (currencyCode)=>{
         for(var i = 0, length = this.subscribedObjects.length;i<length;i++){
             var object = this.subscribedObjects[i];
             if(CurrencyObject[object.iAtTheTime].code == currencyCode){
@@ -19,9 +19,9 @@ var subscribable = {
 function init(){
     browser.runtime.sendMessage({
         getCurrencies:true
-    }).then(function(currencies){
+    }).then((currencies)=>{
         CurrencyObject = currencies.response;
-        browser.storage.local.get("preferredCurrency").then(function(res){
+        browser.storage.local.get("preferredCurrency").then((res)=>{
             elements = document.body.getElementsByTagName("*");
             preferredCurrency = res.preferredCurrency;
             for(var i = 0,length = elements.length;i<length;i++){
@@ -32,12 +32,10 @@ function init(){
             start(children);
         
         
-        },
-        function(res){
+        },()=>{
             console.log("error occured");
         });
-    },
-    function(){
+    },()=>{
         console.log("error occured");
     });
 }
@@ -149,7 +147,6 @@ function start(nodeToCheck){
 
 function embedInWebsite(convertableObject,element){
     element.textContent += '('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
-    
 }
 
 function checkVariablesForMatchingObjects(code){
