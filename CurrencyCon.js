@@ -25,7 +25,7 @@ function init(){
             elements = document.body.getElementsByTagName("*");
             preferredCurrency = res.preferredCurrency;
             for(var i = 0,length = elements.length;i<length;i++){
-                if(elements[i].children.length==0){
+                if(elements[i].children.length==0 && elements[i].tagName != "SCRIPT"){
                     children.push(elements[i]);
                 }
             }
@@ -59,7 +59,7 @@ function initObserver(){
                                         var node = addedNode.getElementsByTagName("*");
                                         var nodeChildren = [];
                                         for(var j = 0,addedLength = node.length;j<addedLength;j++){
-                                            if(node[j].children.length == 0){
+                                            if(node[j].children.length == 0 && node[j].tagName != "SCRIPT"){
                                                 nodeChildren.push(node[j]);
     
                                             }
@@ -146,7 +146,8 @@ function start(nodeToCheck){
 }
 
 function embedInWebsite(convertableObject,element){
-    element.textContent += '('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+")";
+    var converted = '('+(parseFloat(convertableObject.CurrencyString)* CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)+preferredCurrency+')';
+    element.textContent = element.textContent.substr(0,convertableObject.indexofSymbol+convertableObject.CurrencyString.length+1)+converted+element.textContent.substr(convertableObject.indexofSymbol+convertableObject.CurrencyString.length+1);
 }
 
 function checkVariablesForMatchingObjects(code){
