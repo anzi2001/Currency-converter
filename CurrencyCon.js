@@ -122,7 +122,7 @@ function start(nodeToCheck){
                     }
                     else{
                         CurrencyObject[i].isBeingChecked = true;
-                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+preferredCurrency+"&compact=y",JSON.stringify(convertableObject),function(response,object){
+                        checkCurrencyValue("https://free.currencyconverterapi.com/api/v6/convert?q="+ CurrencyObject[convertableObject.iAtTheTime].code+"_"+preferredCurrency+"&compact=y",JSON.stringify(convertableObject),(response,object)=>{
                             object = JSON.parse(object);
                             var CurrencyValue = JSON.parse(response)[CurrencyObject[object.iAtTheTime].code+"_"+preferredCurrency].val;
                             var iOfMatchingObject = checkVariablesForMatchingObjects(CurrencyObject[object.iAtTheTime].code);
