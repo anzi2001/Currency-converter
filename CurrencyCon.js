@@ -50,7 +50,7 @@ function initObserver(){
                     preferredCurrency = res.preferredCurrency;
 
                     var body = document.getElementsByTagName("body");
-                    var config = {attributes:true,childList:true,subtree:true};
+                    var config = {childList:true,subtree:true};
                     observer = new MutationObserver((mutationsList,observable)=>{
                         for(var mutation of mutationsList) {
                             if(mutation.addedNodes.length != 0){
@@ -82,6 +82,7 @@ if(document.readyState !== "complete"){
     window.addEventListener("load",function load(event){
         window.removeEventListener("load",load,false);
         init();
+        
         initObserver();
     },false);
 }

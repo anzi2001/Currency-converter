@@ -25,7 +25,7 @@
       "scripts":["data-script.js"]
     },
     "permissions":[
-      "tabs",
+      "menus",
       "<all_urls>",
       "storage"
     ],

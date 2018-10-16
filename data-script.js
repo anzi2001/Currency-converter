@@ -1,43 +1,3 @@
-browser.storage.local.get("preferredCurrency").then(function(res){
-    if(res.preferredCurrency == undefined){
-        browser.storage.local.set({
-            "preferredCurrency":"USD",
-            "preferredIndex":0
-        });
-    }
-    
-});
-browser.runtime.onMessage.addListener(function(message){
-    if(message.hasOwnProperty("DOM")){
-        alteredHTML = message.DOM;
-        start();
-        return new Promise(resolve =>{
-            resolve({response: alteredHTML});
-        });
-    }
-    else if(message.hasOwnProperty("getCurrencies")){
-        return new Promise(resolve=>{
-            resolve({response:CurrencyObject});
-        });
-    }
-    else if(message.hasOwnProperty("iOfObject")){
-        
-        CurrencyObject[message.iOfObject].value = message.valueOfCurrency;
-        console.log(CurrencyObject[message.iOfObject].value);   
-    }
-    else if(message.hasOwnProperty("resetValues")){
-        for(var i = 0;i<CurrencyObject.length;i++){
-            CurrencyObject[i].value = 0;
-        }
-    }
-});
-
-
-
-
-
-
-
 CurrencyObject = [
     {
 		"isBeingChecked":false,
@@ -747,3 +707,61 @@ CurrencyObject = [
         "code": "ZMK",
     }
 ];
+111
+browser.storage.local.get("preferredCurrency").then(function(res){
+    if(res.preferredCurrency == undefined){
+        browser.storage.local.set({
+            "preferredCurrency":"USD",
+            "preferredIndex":0
+        });
+    }
+    
+});
+browser.runtime.onMessage.addListener(function(message){
+    if(message.hasOwnProperty("DOM")){
+        alteredHTML = message.DOM;
+        start();
+        return new Promise(resolve =>{
+            resolve({response: alteredHTML});
+        });
+    }
+    else if(message.hasOwnProperty("getCurrencies")){
+        return new Promise(resolve=>{
+            resolve({response:CurrencyObject});
+        });
+    }
+    else if(message.hasOwnProperty("iOfObject")){
+        
+        CurrencyObject[message.iOfObject].value = message.valueOfCurrency;
+        console.log(CurrencyObject[message.iOfObject].value);   
+    }
+    else if(message.hasOwnProperty("resetValues")){
+        for(var i = 0;i<CurrencyObject.length;i++){
+            CurrencyObject[i].value = 0;
+        }
+    }
+});
+
+//i find it useless as of now, may change my mind
+/*browser.menus.create({
+    id: "convert-this",
+    title:"Convert this value",
+    contexts:["selection"]
+},()=>{
+    console.log("error");
+});
+
+browser.menus.onClicked.addListener((info,tab)=>{
+    switch(info.menuItemId){
+        case "convert-this":
+            console.log(info.selectionText);
+            break;
+    }
+})*/
+
+
+
+
+
+
+
