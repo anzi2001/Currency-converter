@@ -707,7 +707,6 @@ CurrencyObject = [
         "code": "ZMK",
     }
 ];
-111
 browser.storage.local.get("preferredCurrency").then(function(res){
     if(res.preferredCurrency == undefined){
         browser.storage.local.set({

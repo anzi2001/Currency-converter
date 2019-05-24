@@ -2,7 +2,7 @@
 
     "manifest_version": 2,
     "name": "CurrencyCon",
-    "version": "1.2.0",
+    "version": "1.3.0",
   
     "description": "Automatically converts currencies to your preferred currency",
   
@@ -25,9 +25,11 @@
       "scripts":["data-script.js"]
     },
     "permissions":[
-      "menus",
-      "<all_urls>",
-      "storage"
+		"tabs",
+		"menus",
+		"activeTab",
+    	"<all_urls>",
+    	"storage"
     ],
     "browser_action": {
       "default_icon":"icons/dollar-48.png",
