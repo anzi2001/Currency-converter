@@ -1,2 +1,5 @@
 .jshintrc
 .vscode
+wasm-test/
+testServer/
+CurrencyCon.zip

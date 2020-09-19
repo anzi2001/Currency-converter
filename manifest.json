@@ -2,7 +2,7 @@
 
     "manifest_version": 2,
     "name": "CurrencyCon",
-    "version": "1.3.0",
+    "version": "1.4.1",
   
     "description": "Automatically converts currencies to your preferred currency",
   
@@ -34,5 +34,6 @@
     "browser_action": {
       "default_icon":"icons/dollar-48.png",
       "default_popup":"popup/choosePreferredCurrency.html"
-    }
+	},
+	"web_accessible_resources": ["wasm_test_bg.wasm","wasm_test_bg.js"]
 }

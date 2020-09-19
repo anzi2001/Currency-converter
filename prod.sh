@@ -1,0 +1,1 @@
+zip -r CurrencyCon.zip CurrencyCon.js popup/ icons/ manifest.json data-script.js
