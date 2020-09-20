@@ -67,7 +67,7 @@ if (document.readyState !== "complete") {
 function start(nodeToCheck) {
 	var value;
 	var t1 = performance.now()
-	var precompiledRegex = /[0-9A-Z]/i;
+	var precompiledRegex = /[0-9]/i;
 	for (var i = 0; i < CurrencyObject.length; i++) {
 		if (CurrencyObject[i].code === preferredCurrency) {
 			continue;
@@ -127,8 +127,8 @@ function start(nodeToCheck) {
 
 function embedInWebsite(convertableObject) {
 	var converted = `(${(parseFloat(convertableObject.CurrencyString) * CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)}\u205F${preferredCurrency})`
-	var to = convertableObject.indexofSymbol + convertableObject.CurrencyString.length + 1
-	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, to) + converted + convertableObject.element.textContent.substr(to);
+	var to = convertableObject.indexofSymbol + convertableObject.CurrencyString.length
+	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, to+1) + converted + convertableObject.element.textContent.substr(to+1);
 }
 
 function checkForNumbers(position, text) {
@@ -144,7 +144,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	var endPos = position + toMoveKoeficient,
 		firstBreak = true;
 	while (endPos < elementText.length && endPos > 0) {
-		if (!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ",")) {
+		if (!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ',') || elementText[endPos] === ' ') {
 			break;
 		}
 		firstBreak = false
@@ -157,7 +157,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	} else {
 		slice = elementText.substr(position + 1, endPos - position);
 	}
-	return slice
+	return slice[slice.length-1] == ',' ? slice.substr(0,slice.length-2) : slice.replace(',','.')
 }
 
 function checkCurrencyValue(url, object, callback) {
