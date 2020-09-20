@@ -61,20 +61,20 @@ function filterElements(elements) {
 }
 
 if (document.readyState !== "complete") {
-	window.addEventListener("load",initCurrency,false);
+	window.addEventListener("load", initCurrency, false);
 } else initCurrency();
 
 function start(nodeToCheck) {
 	var value;
 	var t1 = performance.now()
-	//var precompiledRegex = /[0-9A-Z]/i;
+	var precompiledRegex = /[0-9A-Z]/i;
 	for (var i = 0; i < CurrencyObject.length; i++) {
 		if (CurrencyObject[i].code === preferredCurrency) {
 			continue;
 		}
 		for (var j = 0; j < nodeToCheck.length; j++) {
 			var text = nodeToCheck[j].textContent
-			if(text.includes("\u205F")) continue;
+			if (text.includes("\u205F")) continue;
 			var SymbolPosition = text.indexOf(CurrencyObject[i].symbol);
 			//if the checked symbol exists(and therefore function doesn't return -1),
 			//check if there is a number around the symbol
@@ -82,11 +82,11 @@ function start(nodeToCheck) {
 				value = checkForNumbers(SymbolPosition, text);
 				//check input for dots or spaces only
 				//im don't really need regex because im checking for numbers in checkAroundSymbol
-				if (value !== "" /*&& precompiledRegex.test(value)*/) {
+				if (value !== "" && precompiledRegex.test(value)) {
 					//save the state of variables so i can use them later in the callback
 					var convertableObject = {
 						iAtTheTime: i,
-						jAtTheTime : j,
+						jAtTheTime: j,
 						indexofSymbol: SymbolPosition,
 						CurrencyString: value,
 						element: nodeToCheck[j]
@@ -99,7 +99,7 @@ function start(nodeToCheck) {
 						text = nodeToCheck[j].textContent;
 					} else {
 						CurrencyObject[i].isBeingChecked = true;
-						checkCurrencyValue("https://free.currconv.com/api/v7/convert?q=" + CurrencyObject[i].code + "_" + preferredCurrency + "&compact=ultra&apiKey=6294a7e98205235528ff",convertableObject, (response, object) => {
+						checkCurrencyValue("https://free.currconv.com/api/v7/convert?q=" + CurrencyObject[i].code + "_" + preferredCurrency + "&compact=ultra&apiKey=6294a7e98205235528ff", convertableObject, (response, object) => {
 							var CurrencyValue = response[CurrencyObject[object.iAtTheTime].code + "_" + preferredCurrency];
 							CurrencyObject[object.iAtTheTime].value = CurrencyValue;
 							browser.runtime.sendMessage({
@@ -122,12 +122,13 @@ function start(nodeToCheck) {
 		}
 	}
 	var t2 = performance.now()
-	console.log("start took"+(t2-t1)+"ms")
+	console.log("start took" + (t2 - t1) + "ms")
 }
 
 function embedInWebsite(convertableObject) {
-	var converted = '(' + (parseFloat(convertableObject.CurrencyString) * CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2) +"‎\u205F"+ preferredCurrency + ')';
-	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, convertableObject.indexofSymbol + convertableObject.CurrencyString.length + 1) + converted + convertableObject.element.textContent.substr(convertableObject.indexofSymbol + convertableObject.CurrencyString.length + 1);
+	var converted = `(${(parseFloat(convertableObject.CurrencyString) * CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)}\u205F${preferredCurrency})`
+	var to = convertableObject.indexofSymbol + convertableObject.CurrencyString.length + 1
+	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, to) + converted + convertableObject.element.textContent.substr(to);
 }
 
 function checkForNumbers(position, text) {
@@ -138,25 +139,23 @@ function checkForNumbers(position, text) {
 	}
 	return CurrencyVal;
 }
-	
+
 function checkAroundSymbol(toMoveKoeficient, position, elementText) {
-	var endPos = position+toMoveKoeficient;
+	var endPos = position + toMoveKoeficient,
+		firstBreak = true;
 	while (endPos < elementText.length && endPos > 0) {
-		if(!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ",")){
+		if (!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ",")) {
 			break;
 		}
+		firstBreak = false
 		endPos += toMoveKoeficient;
 	}
 	var slice;
-	if(toMoveKoeficient == -1){
-		slice = elementText.slice(endPos,position)
-	}
-	else{
-		slice = elementText.slice(position+1,endPos);
-	}
-	slice = slice.replace(",",".")
-	if(isNaN(slice)){
-		slice = ""
+	if (firstBreak) return ""
+	if (toMoveKoeficient == -1) {
+		slice = elementText.substr(endPos, position - endPos)
+	} else {
+		slice = elementText.substr(position + 1, endPos - position);
 	}
 	return slice
 }

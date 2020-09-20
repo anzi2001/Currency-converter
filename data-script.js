@@ -743,6 +743,11 @@ browser.runtime.onMessage.addListener(function (message,request,sendResponse) {
 		CurrencyObject[message.iOfObject].value = message.valueOfCurrency;
 		return new Promise(resolve=>resolve("iOfObject"))
 	}
+	else if(message.hasOwnProperty("resetValues")){
+        for(var i = 0;i<CurrencyObject.length;i++){
+            CurrencyObject[i].value = 0;
+        }
+    }
 });
 
 function checkForNumbers(position, text) {
