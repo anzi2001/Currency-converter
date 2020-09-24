@@ -53,7 +53,7 @@ function initObserver() {
 function filterElements(elements) {
 	var children = [];
 	for (var i = 0; i < elements.length; i++) {
-		if (elements[i].textContent != "" && elements[i].children.length == 0 && elements[i].tagName != "SCRIPT" && elements[i].tagName != "LINK" && elements[i].tagName != "IFRAME" && elements[i].tagName != "svg" && elements[i].tagName != "symbol" && elements[i].tagName != "path") {
+		if (elements[i].textContent != "" && elements[i].children.length == 0 && elements[i].tagName != "SCRIPT" && elements[i].tagName != "LINK" && elements[i].tagName != "IFRAME" && elements[i].tagName != "svg") {
 			children.push(elements[i]);
 		}
 	}
@@ -67,7 +67,6 @@ if (document.readyState !== "complete") {
 function start(nodeToCheck) {
 	var value;
 	var t1 = performance.now()
-	var precompiledRegex = /[0-9]/i;
 	for (var i = 0; i < CurrencyObject.length; i++) {
 		if (CurrencyObject[i].code === preferredCurrency) {
 			continue;
@@ -81,8 +80,8 @@ function start(nodeToCheck) {
 			while (SymbolPosition !== -1) {
 				value = checkForNumbers(SymbolPosition, text);
 				//check input for dots or spaces only
-				//im don't really need regex because im checking for numbers in checkAroundSymbol
-				if (value !== "" && precompiledRegex.test(value)) {
+				//i don't really need regex because im checking for numbers in checkAroundSymbol
+				if (value !== "") {
 					//save the state of variables so i can use them later in the callback
 					var convertableObject = {
 						iAtTheTime: i,
@@ -128,7 +127,7 @@ function start(nodeToCheck) {
 function embedInWebsite(convertableObject) {
 	var converted = `(${(parseFloat(convertableObject.CurrencyString) * CurrencyObject[convertableObject.iAtTheTime].value).toFixed(2)}\u205F${preferredCurrency})`
 	var to = convertableObject.indexofSymbol + convertableObject.CurrencyString.length
-	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, to+1) + converted + convertableObject.element.textContent.substr(to+1);
+	convertableObject.element.textContent = convertableObject.element.textContent.substr(0, to + 1) + converted + convertableObject.element.textContent.substr(to + 1);
 }
 
 function checkForNumbers(position, text) {
@@ -144,7 +143,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	var endPos = position + toMoveKoeficient,
 		firstBreak = true;
 	while (endPos < elementText.length && endPos > 0) {
-		if (!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ',') || elementText[endPos] === ' ') {
+		if (!((elementText[endPos] >= '0' && elementText[endPos] <= '9') || elementText[endPos] === '.' || elementText[endPos] === ",")) {
 			break;
 		}
 		firstBreak = false
@@ -157,7 +156,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	} else {
 		slice = elementText.substr(position + 1, endPos - position);
 	}
-	return slice[slice.length-1] == ',' ? slice.substr(0,slice.length-2) : slice.replace(',','.')
+	return slice.replace(',', '.')
 }
 
 function checkCurrencyValue(url, object, callback) {
