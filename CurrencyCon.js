@@ -17,29 +17,31 @@ var subscribable = {
 };
 
 function initCurrency() {
-	browser.runtime.sendMessage({
+	var t1 = performance.now();
+	var getCurrencies = browser.runtime.sendMessage({
 		getCurrencies: true
-	}).then((currencies) => {
-		CurrencyObject = currencies.response;
-		browser.storage.local.get("preferredCurrency").then((res) => {
-			elements = document.body.getElementsByTagName("*");
-			preferredCurrency = res.preferredCurrency;
-			start(filterElements(elements));
-			initObserver()
-		});
+	})
+	var currency = browser.storage.local.get("preferredCurrency")
+	Promise.all([getCurrencies,currency]).then(([allCurrencies,prefCurrency]) => {
+		console.log("getCurrencies took"+(performance.now()-t1)+"ms")
+		CurrencyObject = allCurrencies.response;
+		elements = document.body.getElementsByTagName("*");
+		preferredCurrency = prefCurrency.preferredCurrency;
+		start(filterElements(elements));
+		initObserver()
+		console.log("total time"+(performance.now()-t1)+"ms");
 	});
+	
 }
 
 function initObserver() {
 	observer = new MutationObserver((mutationsList, _) => {
 		for (var i = 0; i < mutationsList.length; i++) {
-			if (mutationsList[i].addedNodes.length != 0) {
-				for (var addedNode of mutationsList[i].addedNodes) {
-					if (addedNode.children !== undefined) {
-						var node = addedNode.getElementsByTagName("*");
-						start(filterElements(node));
-					}
-
+			if (mutationsList[i].addedNodes.length == 0) continue;
+			for (var addedNode of mutationsList[i].addedNodes) {
+				if (addedNode.children !== undefined) {
+					var node = addedNode.getElementsByTagName("*");
+					start(filterElements(node));
 				}
 			}
 		}
@@ -60,7 +62,7 @@ function filterElements(elements) {
 	return children;
 }
 
-if (document.readyState !== "complete") {
+if (document.readyState !== "interactive" && document.readyState !== "complete" ) {
 	window.addEventListener("load", initCurrency, false);
 } else initCurrency();
 
@@ -120,8 +122,7 @@ function start(nodeToCheck) {
 			}
 		}
 	}
-	var t2 = performance.now()
-	console.log("start took" + (t2 - t1) + "ms")
+	console.log("start took" + (performance.now() - t1) + "ms")
 }
 
 function embedInWebsite(convertableObject) {
@@ -143,7 +144,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	var endPos = position + toMoveKoeficient,
 		firstBreak = true;
 	while (endPos < elementText.length && endPos > 0) {
-		if (!((elementText[endPos] >= '0' && elementText[endPos] <= '9') || elementText[endPos] === '.' || elementText[endPos] === ",")) {
+		if (!((elementText[endPos] >= '0' && elementText[endPos] <= '9') || elementText[endPos] == '.' || elementText[endPos] == "," || elementText[endPos] == " ")) {
 			break;
 		}
 		firstBreak = false
@@ -156,7 +157,7 @@ function checkAroundSymbol(toMoveKoeficient, position, elementText) {
 	} else {
 		slice = elementText.substr(position + 1, endPos - position);
 	}
-	return slice.replace(',', '.')
+	return slice.replace(",",".")
 }
 
 function checkCurrencyValue(url, object, callback) {

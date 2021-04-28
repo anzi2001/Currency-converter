@@ -716,32 +716,13 @@ browser.storage.local.get("preferredCurrency").then(function (res) {
 
 });
 browser.runtime.onMessage.addListener(function (message,request,sendResponse) {
-	console.log(message)
-	if (message.hasOwnProperty("iAtTheTime")) {
-		var object = message
-		var position = object.textContent.indexOf(object.symbol)
-		while (position !== -1) {
-			var value = checkForNumbers(position, object.textContent)
-			if (value !== "") {
-				object.position = position
-				object.value = value
-				sendResponse(object)
-				//browser.tabs.sendMessage(tab.id,object)
-				//postMessage(object)
-			}
-			position = object.textContent.indexOf(object.symbol, position + object.symbol.length)
-		}
-		return new Promise(resolve=>resolve("hello"))
-	}
 	if (message.hasOwnProperty("getCurrencies")) {
-		return new Promise(resolve => {
-			resolve({
-				response: CurrencyObject
-			});
+		return Promise.resolve({
+			response: CurrencyObject
 		});
 	} else if (message.hasOwnProperty("iOfObject")) {
 		CurrencyObject[message.iOfObject].value = message.valueOfCurrency;
-		return new Promise(resolve=>resolve("iOfObject"))
+		return Promise.resolve("iOfObject")
 	}
 	else if(message.hasOwnProperty("resetValues")){
         for(var i = 0;i<CurrencyObject.length;i++){
@@ -749,37 +730,6 @@ browser.runtime.onMessage.addListener(function (message,request,sendResponse) {
         }
     }
 });
-
-function checkForNumbers(position, text) {
-	var CurrencyVal = "";
-	CurrencyVal = checkAroundSymbol(1, position, text);
-	if (CurrencyVal === "") {
-		CurrencyVal = checkAroundSymbol(-1, position, text);
-	}
-	return CurrencyVal;
-}
-
-function checkAroundSymbol(toMoveKoeficient, position, elementText) {
-	var isANumber = true,
-		endPos = position+toMoveKoeficient;
-	while (isANumber && endPos < elementText.length && endPos > 0) {
-		if(!(!isNaN(elementText[endPos]) || elementText[endPos] === '.' || elementText[endPos] === ",")){
-			isANumber = false;
-		}
-		endPos += toMoveKoeficient;
-	}
-	var slice;
-	if(toMoveKoeficient == -1){
-		slice = elementText.slice(endPos,position)
-	}
-	else{
-		slice = elementText.slice(position,endPos);
-	}
-	if(isNaN(slice)){
-		slice = ""
-	}
-	return slice
-}
 
 
 //i find it useless as of now, may change my mind
